@@ -1,0 +1,127 @@
+{% assign hover_image_key = card_product.selected_or_first_available_variant.title | downcase | append: '-secondary' %}
+{% assign secondary_image = null %}
+{% assign is_on_sale = false %}
+
+{% assign is_sold_out = true %}
+{% if card_product.selected_or_first_available_variant.available %}
+  {% assign is_sold_out = false %}
+{% endif %}
+
+{% for media in card_product.media %}
+  {% if media.media_type == 'image' and media.src contains hover_image_key %}
+    {% assign secondary_image = media.preview_image %}
+    {% break %}
+  {% endif %}
+{% endfor %}
+
+{% assign product_image = card_product.featured_media %}
+{% if card_product.selected_or_first_available_variant.featured_media %}
+  {% assign product_image = card_product.selected_or_first_available_variant.featured_media %}
+{% endif %}
+
+{% if card_product.selected_or_first_available_variant.compare_at_price
+    > card_product.selected_or_first_available_variant.price
+%}
+  {% assign is_on_sale = true %}
+{% endif %}
+
+<product-card
+  data-product-json='{{  card_product | json }}'
+  data-product-variants-json='{{  card_product.variants | json }}'
+  data-product-handle="{{ card_product.handle }}"
+  data-aos="fade-up"
+  data-aos-delay="{{ index | times: 200 }}"
+  data-aos-duration="600"
+>
+  <div class="relative mb-5 rounded-[10px] border border-light-gray p-5 group">
+    {% if product_image %}
+      <div
+        class="relative ratio">
+        <a href="{{ card_product.url }}" class="absolute top-0 bottom-0 w-full">
+          <picture>
+            <source srcset="{{ product_image | image_url: width: 630, format: 'webp' }}" type="image/webp">
+            <img
+              class="absolute bottom-0 block w-full max-w-full h-full object-contain"
+              src="{{ product_image | image_url: width: 630 }}"
+              alt="{{ product_image.alt | default: card_product.title | escape }}"
+              sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+              width="{{ product_image.width }}"
+              height="{{ product_image.height }}"
+              {% if lazy_load == false %}
+                fetchpriority="high"
+              {% else %}
+                loading="lazy"
+              {% endif %}
+              data-image-type="main"
+            >
+          </picture>
+
+          {% if secondary_image %}
+            <picture>
+              <source srcset="{{ secondary_image | image_url: width: 630, format: 'webp' }}" type="image/webp">
+              <img
+                class="hover-image absolute top-0 left-0 block w-full max-w-full h-full object-contain object-center bg-white opacity-0 transition-opacity duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
+                src="{{ secondary_image | image_url: width: 630 }}"
+                alt="{{ secondary_image.alt | escape }}"
+                sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+                width="{{ secondary_image.width }}"
+                height="{{ secondary_image.height }}"
+                {% if lazy_load == false %}
+                  fetchpriority="high"
+                {% else %}
+                  loading="lazy"
+                {% endif %}
+                data-image-type="hover"
+              >
+            </picture>
+          {% endif %}
+        </a>
+      </div>
+    {% endif %}
+
+    <span
+      id="sale-badge"
+      class="{% unless is_on_sale %} hidden {% endunless %} absolute top-5 left-5 inline-block rounded-full border border-regal-red px-4 py-1 text-xl font-medium text-regal-red font-franklin-gothic-sans"
+    >
+      {{ 'products.product.on_sale' | t }}
+    </span>
+
+    <span
+      id="sold-out-badge"
+      class="{% unless is_sold_out %} hidden {% endunless %} absolute top-5 left-5 inline-block rounded-full border border-gray px-4 py-1 text-xl font-medium text-gray font-franklin-gothic-sans capitalize"
+    >
+      {{ 'products.product.sold_out' | t }}
+    </span>
+  </div>
+
+  <div class="product-caption">
+    {% if card_product.variants.size > 1 %}
+      {% render 'variant-picker', product: card_product %}
+    {% endif %}
+
+    {% if card_product.type %}
+      <span class="block text-sm text-gray font-regular">{{ card_product.type }}</span>
+    {% endif %}
+
+    <h3 class="mb-1 text-base font-semibold text-primary-blue" itemprop="name">
+      <a href="{{ card_product.url }}">
+        {{ card_product.title | escape }}
+      </a>
+    </h3>
+
+    <div id="price" class="flex flex-wrap gap-3 {% if is_sold_out %} sold-out-price {% endif %}">
+      {% assign variant = card_product.selected_or_first_available_variant %}
+
+      {% if variant.compare_at_price > variant.price %}
+        <span id="compare-price" class="block text-sm text-gray line-through">
+          {{ variant.compare_at_price | money }}
+        </span>
+      {% endif %}
+
+      <span id="regular-price" class="block text-sm {% if variant.compare_at_price > variant.price %}text-regal-red{% endif %}">
+        {{ variant.price | money }}
+      </span>
+    </div>
+
+  </div>
+</product-card>

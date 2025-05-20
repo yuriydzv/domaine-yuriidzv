@@ -1,0 +1,10 @@
+product-card:hover .hover-image {
+  opacity: 1;
+}
+.ratio::before {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  padding-bottom: 113%;
+}

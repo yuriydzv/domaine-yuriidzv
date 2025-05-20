@@ -1,0 +1,49 @@
+<variant-options>
+  {%- for product_option in product.options_with_values -%}
+    {%- assign is_checked_set = false -%} <!-- track if we've already checked one -->
+    <div role="radiogroup" aria-label="{{ product_option.name }}" class="flex flex-wrap gap-3 mb-3 swatch-group">
+      {%- for option_value in product_option.values -%}
+        {%- assign matching_variant = product.variants | where: 'option1', option_value | first -%}
+        {%- if matching_variant -%}
+          {%- liquid
+            assign swatch_style = null
+            assign focal_point = null
+
+            if option_value.swatch.image
+              assign swatch_img_url = option_value.swatch.image | image_url: width: 50
+              assign swatch_style = 'url(' | append: swatch_img_url | append: ')'
+              assign focal_point = option_value.swatch.image.presentation.focal_point
+            elsif option_value.swatch.color
+              assign swatch_style = 'rgb(' | append: option_value.swatch.color.rgb | append: ')'
+            endif
+          -%}
+
+          <div class="w-[20px]">
+            <input
+              type="{{ type | default: 'radio' }}"
+              id="variant-{{ matching_variant.id }}"
+              name="option-{{ product_option.name | handleize }}-{{ product.id }}"
+              value="{{ option_value }}"
+              data-variant-id="{{ matching_variant.id }}"
+              form="product-form-template--{{ product.id }}"
+              class="swatch-input__input peer sr-only"
+              role="radio"
+              {% unless is_checked_set %}
+                checked
+                {%- assign is_checked_set = true -%}
+              {% endunless %}
+            >
+            <label
+              for="variant-{{ matching_variant.id }}"
+              title="{{ option_value }}"
+              tabindex="0"
+              class="block w-[20px] relative swatch-input__label rounded-full cursor-pointer peer-checked:outline peer-checked:outline-[0.1rem] peer-checked:outline-offset-[0.1rem] peer-checked:outline-gray group transition-transform duration-200 hover:scale-110 hover:shadow-md"
+            >
+              {% render 'swatch', swatch: option_value.swatch, shape: shape %}
+            </label>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endfor -%}
+</variant-options>

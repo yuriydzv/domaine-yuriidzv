@@ -1,0 +1,13 @@
+{{ 'Franklin-Gothic-Condensed.ttf' | asset_url | preload_tag: as: 'font', type: 'font/ttf', crossorigin: 'anonymous' }}
+
+{% style %}
+  @font-face {
+    font-family: 'Franklin Gothic ATF';
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    src: url("{{ 'Franklin-Gothic-Condensed.ttf' | asset_url }}") format('truetype');
+  }
+{% endstyle %}
